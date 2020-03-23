@@ -213,7 +213,7 @@ void assign_dealer_points(struct table *game) {
 
 	game->total_dealer += game->dealer_points[game->hand_dealer];
 	
-	if(game->aces_dealer > 0 && game->total_player > 21) {
+	if(game->aces_dealer > 0 && game->total_dealer > 21) {
 			
 		game->total_dealer = game->total_dealer - 10;
 		game->aces_dealer--;
