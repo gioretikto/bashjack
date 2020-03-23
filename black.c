@@ -124,9 +124,7 @@ int main()
 			}
 		}
   } /* end of while(1) */
-  	printf("Player's total points: %d\n", game.total_player);
-  	printf("Dealers's total points: %d\n", game.total_dealer);
-  	
+ 	
     return 0;
 }
 
@@ -250,8 +248,6 @@ void print_cards(struct table *game, char check_winner) {
 	for (i = 0; i <= game->hand_player; i++) /* print player's cards */
     	printf("%s ", game->player_cards[i]);
     	
-    printf("hand_player= %d, dealer_hand =%d\n", game->hand_player, game->hand_dealer);
-    	
     while (i < 17) {
    		 printf("\n"); /* Clears screen by printing a number of blank lines. */
    		 i++;
@@ -353,8 +349,10 @@ int findWinner (struct table *game, char check_stand) {
 		
 		printf("credit: %d$\n", game->credit);
 		
-		if (game->credit <= 0) 
+		if (game->credit <= 0) {
 			printf("Sorry you bankrupted\n");
+			return 4;				/* Game Over */	
+		}
 		
 		else {
 			printf("Play again (Y/N)?\n");
