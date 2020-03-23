@@ -124,7 +124,7 @@ int main()
 			}
 		}
   } /* end of while(1) */
- 	
+
     return 0;
 }
 
@@ -200,13 +200,13 @@ void assign_player_points(struct table *game) {
 
 	game->total_player += game->player_points[game->hand_player];
 	
-	if(game->aces_dealer > 0 && game->total_player > 21) {
+	if(game->aces_player > 0 && game->total_player > 21) {
 			
 				game->total_player = game->total_player - 10;
 				game->aces_player--;
 	}		
 		
-	return; 
+	return;
 }
 
 void assign_dealer_points(struct table *game) {
@@ -233,7 +233,7 @@ void print_cards(struct table *game, char check_winner) {
 	else	
 		printf("%s ", "🂠");
 	
-	for (i = 0; i <= game->hand_dealer; i++) { /* print dealer's cards */
+	for (i = 0; i <= game->hand_dealer; i++) { 	/* print dealer's cards */
 	
 		if (i == 0)
 			continue;
@@ -245,13 +245,14 @@ void print_cards(struct table *game, char check_winner) {
 	
 	printf("Your cards:\n\n");
 	
-	for (i = 0; i <= game->hand_player; i++) /* print player's cards */
+	for (i = 0; i <= game->hand_player; i++) 	/* print player's cards */
     	printf("%s ", game->player_cards[i]);
     	
     while (i < 17) {
-   		 printf("\n"); /* Clears screen by printing a number of blank lines. */
+   		 printf("\n"); 	/* Clears screen by printing a number of blank lines. */
    		 i++;
   	}
+  	
     return;
 }
 
@@ -269,7 +270,7 @@ void init(struct table *game) {
 			fgets(game->player_name, BUF_NAME, stdin);
 			
 			if(!isprint(game->player_name[0])) {
-				printf("please enter a valid name\n");
+				printf("Please enter a valid name\n");
 				continue;
 			}
 			
@@ -337,7 +338,7 @@ int findWinner (struct table *game, char check_stand) {
 		else if (winner == 2) {
 			printf("Congratulation you win!\n");
 			game->credit += game->bet;
-		}			
+		}
 					
 		else if (winner == 3) {
 			printf("Sorry, Dealer wins\n");
@@ -351,7 +352,7 @@ int findWinner (struct table *game, char check_stand) {
 		
 		if (game->credit <= 0) {
 			printf("Sorry you bankrupted\n");
-			return 4;				/* Game Over */	
+			return 4;				/* Game Over */
 		}
 		
 		else {
@@ -367,7 +368,7 @@ int findWinner (struct table *game, char check_stand) {
 				
 				else if (ans == 'N') {
 					printf("Goodbye!\n");
-					return 4;		/* Game Over */					
+					return 4;		/* Game Over */
 				}
 				
 				else
@@ -388,7 +389,7 @@ void bet (struct table *game) {
 	while ( (scanf("%d", &game->bet) != 1) || game->bet > game->credit)
   	{
     	while (getchar() != '\n');
-    	printf ("Enter a valid sum, your credit is %d$:\n",game->credit);
+    	printf ("Enter a valid sum, your credit is %d$:\n", game->credit);
   	}
 	
 	return;
