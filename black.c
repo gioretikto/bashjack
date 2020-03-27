@@ -3,143 +3,159 @@
 #include <time.h>
 #include <ctype.h>
 
+#define ACE 0
 #define CARDS 13
 #define SUITS 4
-#define MAX_CARDS 5
+#define MAX_CARDS 10
 #define SCREENLINECOUNT 25
 #define BUF_NAME 15
-     					    		
-struct table{	  
-	const char *player_cards[MAX_CARDS];
-    const char *dealer_cards[MAX_CARDS];
+
+static const char *deck[SUITS][CARDS] = {{"🂡","🂢","🂣","🂤","🂥","🂦","🂧","🂨","🂩","🂪","🂫","🂭","🂮"},
+									 	 {"🂱","🂲","🂳","🂴","🂵","🂶","🂷","🂸","🂹","🂺","🂻","🂽","🂾"},
+		     							 {"🃁","🃂","🃃","🃄","🃅","🃆","🃇","🃈","🃉","🃊","🃋","🃍","🃎"},
+        					    		 {"🃑","🃒","🃓","🃔","🃕","🃖","🃗","🃘","🃙","🃚","🃛","🃝","🃞"}};
+        					    		 
+enum outcomes {NO_WINNER, PLAYER_WINS, BLACKJACK, DEALER_WINS, TIE, GAME_OVER, ID_DEALER, ID_PLAYER};
+       					    			    		
+struct table {
+
+	int id;
+
+	int cards[MAX_CARDS];
     
-    char player_name[BUF_NAME]; /* Holds the user's first name. */
+    int points[MAX_CARDS];  /* Points for each hand */
+   
+    int total;				/* total points */
+        
+    int hand;				/* number of cards dealt */
     
-    int player_points[MAX_CARDS];
-    int dealer_points[MAX_CARDS];
+    int aces;				/* N° of aces: These variable are used to attribute values 1/11 to Aces*/
     
-    int total_player;	/* total player's points */	
-    int total_dealer;	/* total dealer's points */
+    int credit;
     
-    int hand_player;	/* number of cards dealt for player */
-    int hand_dealer;	/* number of cards dealt for dealer */
-    
-    int aces_dealer;	/* These variable are used to attribute values 1/11 to Aces*/
-    int aces_player;
-    
-    int credit, bet;
+    int bet;
 };
 
-void draw_cards(struct table *game);
-void print_cards(struct table *game, char check_winner);
-void init(struct table *game);
-int findWinner(struct table *game, char check_stand);
-void assign_player_points(struct table *game);
-void assign_dealer_points(struct table *game);
-void bet (struct table *game);
+void draw_cards(struct table *player);
+void print_cards(struct table *player, char check_winner);
+void init_game(struct table *player);
+int findWinner(struct table *dealer, struct table *player, char check_stand);
+void assign_points(struct table *player);
+void bet (struct table *player);
 
 int main()
 {	
-    struct table game = {0};
-	game.credit = 50;
+    srand((unsigned)time(NULL));
     
-    char check_winner; /* to check the presence of a winner */
-    char check_stand;  /* to check wheter user entered stand */
-    check_stand = check_winner = 0;
+    struct table player;
+    struct table dealer;
     
-    int ans; /* For Y/N and Hit/S answers */
-	
-    while (1) {
-    
-    	if (game.hand_player == 0) {
-    	
-    		init(&game);
-			draw_cards(&game);
-	
-			assign_player_points(&game);
-			game.hand_player++;
-			assign_player_points(&game);
-			
-			assign_dealer_points(&game);
-			game.hand_dealer++;
-			assign_dealer_points(&game);
+   	dealer.id = ID_DEALER;
+	player.id = ID_PLAYER;
 
-			check_winner = findWinner(&game, check_stand);
-				
-			if (check_winner != 0) { 	/* if there is a winner */
+    char ans = 'M'; /* For Hit/S answers */
+    
+    char check_winner;  /* to check the presence of a winner */
+    char check_stand;   /* to check wheter user entered stand */
+   
+    check_stand = 0;
+	check_winner = 0;
+	    
+    printf("\n\nStep right up to the Blackjack tables\n\n");
 		
-				if (check_winner == 4) 	/* Game Over */
-					break;
-				
-				else
-					continue;
-			}
-		}
-
-		printf("Hit or stand (H/S)? ");
-				
-		do {
-			ans = toupper(getchar());
-			
-			if(ans == 'H' || ans == 'S')
-				break;
-				
-			else 
-				continue;
-			
-		} while(1);
-					
-		if (ans == 'H') {
-				
-			game.hand_player++;
-			assign_player_points(&game);
-						
-			if (game.total_dealer < 17) {  /* Dealer has to stand at 17 */
-				game.hand_dealer++;
-				assign_dealer_points(&game);
-			}
-		}
-				
-		else {   /* ans == 'S' */
-			
-			if (game.total_dealer >= 17)
-				check_stand = 1;				
-				
-			else { 		/* user enters S but dealer's point < 17 */
-				game.hand_dealer++;
-				assign_dealer_points(&game);
-			}
-		}
+	printf("Ok, Get ready for casino action * Blackjack pays 3 to 2 * You're credit is 50$ * Press enter to start\n\n");
+	
+	init_game(&dealer);
+	
+	init_game(&player);
+	
+    for (;;) {
 		
-		check_winner = findWinner(&game, check_stand);
+		print_cards(&dealer, check_winner);
+		print_cards(&player, check_winner);
 		
-		if (check_winner != 0) {
+		check_winner = findWinner(&dealer, &player, check_stand);
 		
-			if (check_winner == 4) /* Game Over */
+		if (check_winner != NO_WINNER) {
+		
+			if (check_winner == GAME_OVER) /* Game Over */
 				break;
 					
 			else {
-				check_stand = 0;
+			   	check_stand = 0;
+				check_winner = 0;
+				init_game(&dealer);
+				init_game(&player);
+				ans = 'M';
 				continue;
 			}
 		}
-  } /* end of while(1) */
+		
+		else {
+		
+			printf("Hit or stand (H/S)? ");
+					
+			do {
+				ans = toupper(getchar());
+				
+				if (ans == 'H' || ans == 'S')
+					break;
+					
+				else 
+					continue;
+				
+			} while(1);
+			
+			if (ans == 'H') {
+			
+				if (dealer.total < 17) {
+					assign_points(&player);
+					assign_points(&dealer);
+				}
+				
+				else 
+					assign_points(&player);
+			}
+			
+			if (ans == 'S') {
+				if (dealer.total < 17)
+					assign_points(&dealer);
+				else
+					check_stand = 1;
+			}
+		}
+			
+  } /* end of for(;;) */
 
     return 0;
 }
 
-void draw_cards(struct table *game) {
+void init_game(struct table *player) {
 
-	const char *deck[SUITS][CARDS] = {{"🂡","🂢","🂣","🂤","🂥","🂦","🂧","🂨","🂩","🂪","🂫","🂭","🂮"},
-									  {"🂱","🂲","🂳","🂴","🂵","🂶","🂷","🂸","🂹","🂺","🂻","🂽","🂾"},
-		     						  {"🃁","🃂","🃃","🃄","🃅","🃆","🃇","🃈","🃉","🃊","🃋","🃍","🃎"},
-        					    	  {"🃑","🃒","🃓","🃔","🃕","🃖","🃗","🃘","🃙","🃚","🃛","🃝","🃞"}};
+	player->total = 0;
+
+	player->aces = 0;
+	
+	player->hand = 0;
+	
+	draw_cards(player);
+	
+	assign_points(player);
+			
+	assign_points(player);
+	
+	if (player->id == ID_PLAYER) {
+		player->credit = 50;
+		bet(player);
+	}
+}
+
+void draw_cards(struct table *player) {
+
     int card_pick, suit_pick;
     int i = 0;
       
     int drawn_card[SUITS][CARDS] = {0};
-    
-    srand((unsigned)time(NULL));
     
     while (i < MAX_CARDS) { 					/* draw dealer's cards */
     
@@ -148,227 +164,177 @@ void draw_cards(struct table *game) {
     	
     	if (drawn_card[suit_pick][card_pick] == 0) {
     	
-	    	game->dealer_cards[i] = deck[suit_pick][card_pick];
+	    	player->cards[i] = suit_pick * CARDS + card_pick;
 	    	drawn_card[suit_pick][card_pick] = 1;
 			
-			if (card_pick == 0) {				/* Here points are defined but not still assigned */
-				game->dealer_points[i] = 11;
-				game->aces_dealer++;
-			}
+			if (card_pick == ACE)
+				player->points[i] = 11;
 			
 			else if (card_pick >= 9)
-				game->dealer_points[i] = 10;
+				player->points[i] = 10;
 					
 			else
-				 game->dealer_points[i] = card_pick + 1;
+				 player->points[i] = card_pick + 1;
 				 
 			i++;
 		}
 	}
 		
-	i = 0;
-	
-    while (i < MAX_CARDS) { 					/* draw player's cards */
-    
-    	card_pick = rand() % CARDS;
-    	suit_pick = rand() % SUITS;
-    	
-		if (drawn_card[suit_pick][card_pick] == 0) {
-    	
-	    	game->player_cards[i] = deck[suit_pick][card_pick];
-	    	drawn_card[suit_pick][card_pick] = 1;
+	return;
+}
+
+void assign_points(struct table *player) {
+
+		if (player->points[player->hand] == 11)
+			player->aces++;
 			
-			if (card_pick == 0) {				/* Here points are defined but not still assigned */
-				game->player_points[i] = 11;
-				game->aces_player++;
-			}
+		if ( (player->aces > 0) && ( (player->total + player->points[player->hand]) > 21) ) {
+			player->total += player->points[player->hand];
 			
-			else if (card_pick >= 9)
-				game->player_points[i] = 10;
-					
-			else
-				 game->player_points[i] = card_pick + 1;
-			
-	    	i++;
+			player->total = player->total - 10;
+			player->aces--;
 		}
-	}
 		
-	return;
-}
-
-void assign_player_points(struct table *game) {
-
-	game->total_player += game->player_points[game->hand_player];
-	
-	if(game->aces_player > 0 && game->total_player > 21) {
+		else
+			player->total += player->points[player->hand];
 			
-				game->total_player = game->total_player - 10;
-				game->aces_player--;
-	}		
-		
-	return;
+		player->hand++;
 }
 
-void assign_dealer_points(struct table *game) {
-
-	game->total_dealer += game->dealer_points[game->hand_dealer];
-	
-	if(game->aces_dealer > 0 && game->total_dealer > 21) {
-			
-		game->total_dealer = game->total_dealer - 10;
-		game->aces_dealer--;
-	}
-	
-	return;
-}
-
-void print_cards(struct table *game, char check_winner) {
+void print_cards(struct table *player, char check_winner) {
 
 	int i;
+	int suit_pick, card_pick;
 	
-	printf("Dealer's cards:\n\n");
+	if (player->id == ID_DEALER)
+		printf("Dealer's cards:\n\n");
+	else
+		printf("Your cards:\n\n");
 	
-	if (check_winner != 0)
-		printf("%s ", game->dealer_cards[0]);
-	else	
-		printf("%s ", "🂠");
+	if (player->id == ID_DEALER) {
 	
-	for (i = 0; i <= game->hand_dealer; i++) { 	/* print dealer's cards */
+		if (check_winner != NO_WINNER) {  	/* Show dealer's first card at end of game */
+			suit_pick = player->cards[0] / CARDS;
+			card_pick = player->cards[0] % CARDS;
+			printf("%s ", deck[suit_pick][card_pick]);
+		}
+		
+		else
+			printf("%s ", "🂠");
+	}
 	
-		if (i == 0)
+	for (i = 0; i < player->hand; i++) { 	/* print player's cards */
+	
+		if (i == 0 && player->id == ID_DEALER)	/* First dealer's card is coveres */
 			continue;
-		else 
-		   	printf("%s ", game->dealer_cards[i]);
-	}
-		
-	printf("\n\n");
-	
-	printf("Your cards:\n\n");
-	
-	for (i = 0; i <= game->hand_player; i++) 	/* print player's cards */
-    	printf("%s ", game->player_cards[i]);
-    	
-    while (i < 17) {
-   		 printf("\n"); 	/* Clears screen by printing a number of blank lines. */
-   		 i++;
-  	}
-  	
-    return;
-}
-
-void init(struct table *game) {
-
-	game->total_player = 0;
-	game->total_dealer = 0;
-	
-	printf("\n\nStep right up to the Blackjack tables\n\n");
-
-	if (game->player_name[0] == 0) {
-		printf("\nWhat is your first name? ");
-		
-		do {
-			fgets(game->player_name, BUF_NAME, stdin);
-			
-			if(!isprint(game->player_name[0])) {
-				printf("Please enter a valid name\n");
-				continue;
-			}
-			
-			else
-				break;
-			
-		} while (1);
-			
-		printf("Ok, %sGet ready for casino action * Blackjack pays 3 to 2 * You're credit is 50$ * Press enter to start\n\n", game->player_name);
-		bet(game);
+		else {
+			suit_pick = player->cards[i] / CARDS;
+			card_pick = player->cards[i] % CARDS;
+		   	printf("%s ", deck[suit_pick][card_pick]);
+		}
 	}
 	
-	return;
+	if (player->id == ID_DEALER)
+	    printf("\n\n");
+	    
+	else {
+		while (i < 17) {
+	   		 printf("\n"); 	/* Clears screen by printing a number of blank lines */
+	   		 i++;
+	  	}
+	}
 }
 
-int findWinner (struct table *game, char check_stand) {
+int findWinner (struct table *dealer, struct table *player, char check_stand) {
 
-	char winner, ans;
+	char winner;
 
 	if (check_stand == 1) {
 	
-		if (game->total_dealer == game->total_player)							/* Tie */
-			winner = 5;
+		if (dealer->total == player->total)			/* Tie */
+			winner = TIE;
 	
-		else if ( (game->total_player <= 21) && (game->total_player > 17) )  	/* Player wins */
-			winner = 2;		
+		else if (player->total <= 21) {
 		
-		else   /* Dealer wins */
-			winner = 3;
+			if (player->total > dealer->total)  	/* Player wins */
+				winner = PLAYER_WINS;
+			else
+				winner = DEALER_WINS;
+		}
+			
+		else   										/* Dealer wins  player->total > 21 */
+			winner = DEALER_WINS;
 	}
 	
 	else {
+	
+		if ( (player->total == 21) && (dealer->total == 21) )		/* A tie */
+			winner = TIE;
+	
+		else if (player->total > 21) 	/* If the player exceeds a sum of 21 "busts", loses, even if the dealer also exceeds 21 */
+			winner = DEALER_WINS;
 
-		if ( (game->total_player == 21) && (game->total_dealer == 21) )			/* A tie */
-			winner = 5;
-
-		else if ( (game->total_player == 21) && (game->total_dealer != 21) )	/* Player wins with Blackjack */
-			winner = 1;
-		
-		else if ( (game->total_player <= 21) &&  (game->total_dealer > 21) )	/* Player wins */
-			winner = 2;
+		else if (player->total == 21) {
+			if (player->hand == 2)		/* Player wins with Blackjack */
+				winner = BLACKJACK;
+			else
+				winner = PLAYER_WINS;
+		}
 					
-		else if ( (game->total_dealer == 21) && (game->total_player != 21) )	/* Dealer wins */
-			winner = 3;
+		else if (dealer->total == 21)		/* Dealer wins */
+			winner = DEALER_WINS;
 			
-		else if ( (game->total_dealer < 21) && (game->total_player > 21) )		/* Dealer wins */
-			winner = 3;
-		
+		else if (dealer->total > 21)
+				winner = PLAYER_WINS;
+			
 		else
-			winner = 0;		/* no winner found */
+			winner = NO_WINNER;		/* no winner found */
 	}
 	
-	if (winner > 0) {
+	if (winner != NO_WINNER) {
 		
-		print_cards(game, winner);
+		print_cards(dealer, winner);
+		print_cards(player, winner);
 		
-		game->hand_player = game->hand_dealer = 0; 		/* zero number of cards dealt */
-		game->aces_player = game->aces_dealer = 0; 		/* zero number of aces */
-		
-		if (winner == 1) {
+		if (winner == BLACKJACK) {
 			printf("Congratulation you win!\n");
-			game->credit += (game->bet * 3)/2;
+			player->credit += (player->bet * 3)/2;
 		}
 		
-		else if (winner == 2) {
+		else if (winner == PLAYER_WINS) {
 			printf("Congratulation you win!\n");
-			game->credit += game->bet;
+			player->credit += player->bet;
 		}
 					
-		else if (winner == 3) {
+		else if (winner == DEALER_WINS) {
 			printf("Sorry, Dealer wins\n");
-			game->credit -= game->bet;
+			player->credit -= player->bet;
 		}
 					
 		else
 			printf("No one wins\n");
 		
-		printf("credit: %d$\n", game->credit);
+		printf("credit: %d$\n", player->credit);
 		
-		if (game->credit <= 0) {
+		if (player->credit <= 0) {
 			printf("Sorry you bankrupted\n");
-			return 4;				/* Game Over */
+			return GAME_OVER;				/* Game Over */
 		}
 		
 		else {
+			char ans;
 			printf("Play again (Y/N)?\n");
 			
 			do {
 				ans = toupper(getchar());
 				
-				if(ans == 'Y') {
-					bet(game);
+				if (ans == 'Y') {
 					return 1;
 				}
 				
 				else if (ans == 'N') {
 					printf("Goodbye!\n");
-					return 4;		/* Game Over */
+					return GAME_OVER;		/* Game Over */
 				}
 				
 				else
@@ -376,21 +342,17 @@ int findWinner (struct table *game, char check_stand) {
 				} while(1);
 		 }
 	}
-	
-	print_cards(game, winner);
-	
+		
 	return 0;
 }
 
-void bet (struct table *game) {
+void bet (struct table *player) {
 
 	printf("What's your bet?\n");
 	
-	while ( (scanf("%d", &game->bet) != 1) || game->bet > game->credit)
+	while ( (scanf("%d", &player->bet) != 1) || player->bet > player->credit)
   	{
     	while (getchar() != '\n');
-    	printf ("Enter a valid sum, your credit is %d$:\n", game->credit);
+    	printf ("Enter a valid sum, your credit is %d$:\n", player->credit);
   	}
-	
-	return;
 }
