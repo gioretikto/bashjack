@@ -7,7 +7,7 @@
 #define CARDS 13
 #define SUITS 4
 #define MAX_CARDS 10
-#define SCREENLINECOUNT 25
+#define SCREENLINECOUNT 17
 
 static const char *deck[SUITS][CARDS] = {{"🂡","🂢","🂣","🂤","🂥","🂦","🂧","🂨","🂩","🂪","🂫","🂭","🂮"},
 									 	 {"🂱","🂲","🂳","🂴","🂵","🂶","🂷","🂸","🂹","🂺","🂻","🂽","🂾"},
@@ -237,7 +237,7 @@ void print_cards(struct table *player, char check_winner) {
 	    printf("\n\n");
 	    
 	else {
-		while (i < 17) {
+		while (i < SCREENLINECOUNT) {
 	   		 printf("\n"); 	/* Clears screen by printing a number of blank lines */
 	   		 i++;
 	  	}
