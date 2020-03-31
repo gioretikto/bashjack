@@ -38,7 +38,7 @@ struct table {
 void draw_cards(struct table *player);
 void print_cards(struct table *player, char check_winner);
 void init_game(struct table *player);
-int findWinner(struct table *dealer, struct table *player, char check_stand);
+int findWinner(struct table *dealer, struct table *player, _Bool check_stand);
 void assign_points(struct table *player);
 void bet (struct table *player);
 
@@ -51,14 +51,12 @@ int main()
     
    	dealer.id = ID_DEALER;
 	player.id = ID_PLAYER;
+	player.credit = 50;
 
     char ans = 'M'; /* For Hit/S answers */
     
-    char check_winner;  /* to check the presence of a winner */
-    char check_stand;   /* to check wheter user entered stand */
-   
-    check_stand = 0;
-	check_winner = 0;
+    char check_winner = 0;  /* to check the presence of a winner */
+    _Bool check_stand = 0;   /* to check wheter user entered stand */
 	    
     printf("\n\nStep right up to the Blackjack tables\n\n");
 		
@@ -143,10 +141,8 @@ void init_game(struct table *player) {
 			
 	assign_points(player);
 	
-	if (player->id == ID_PLAYER) {
-		player->credit = 50;
+	if (player->id == ID_PLAYER)
 		bet(player);
-	}
 }
 
 void draw_cards(struct table *player) {
@@ -178,8 +174,6 @@ void draw_cards(struct table *player) {
 			i++;
 		}
 	}
-		
-	return;
 }
 
 void assign_points(struct table *player) {
@@ -222,7 +216,7 @@ void print_cards(struct table *player, char check_winner) {
 			printf("%s ", "🂠");
 	}
 	
-	for (i = 0; i < player->hand; i++) { 	/* print player's cards */
+	for (i = 0; i < player->hand; i++) { 		/* print player's cards */
 	
 		if (i == 0 && player->id == ID_DEALER)	/* First dealer's card is coveres */
 			continue;
@@ -244,7 +238,7 @@ void print_cards(struct table *player, char check_winner) {
 	}
 }
 
-int findWinner (struct table *dealer, struct table *player, char check_stand) {
+int findWinner (struct table *dealer, struct table *player, _Bool check_stand) {
 
 	char winner;
 
@@ -349,9 +343,6 @@ void bet (struct table *player) {
 
 	printf("What's your bet?\n");
 	
-	while ( (scanf("%d", &player->bet) != 1) || player->bet > player->credit)
-  	{
-    	while (getchar() != '\n');
-    	printf ("Enter a valid sum, your credit is %d$:\n", player->credit);
-  	}
+	while ( (scanf("%d", &player->bet) != 1) || (player->bet > player->credit) ) 
+	    printf ("Enter a valid sum, your credit is %d$:\n", player->credit);
 }
