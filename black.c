@@ -8,7 +8,7 @@ enum outcomes {NO_WINNER, PLY_WINS, BLACKJACK, CPU_WINS, TIE};
 
 extern struct card deck[CARDS];
 
-void init_game(struct black *table) {
+int init_game(struct black *table) {
 
 	table->player[PLY].total = table->player[CPU].total = 0;
 	table->player[PLY].hand = table->player[CPU].hand = 0;
@@ -16,8 +16,8 @@ void init_game(struct black *table) {
 	table->check_stand = 0;
 	table->end = 0;
 	
-	bet(table);
-	
+	if(bet(table) == 0)
+		return 0;	
 			
 	if (table->cards_dealt == 0 || table->cards_dealt > CARDS-14)
 	{
@@ -36,6 +36,8 @@ void init_game(struct black *table) {
 	}
 	
 	findWinner(table);
+	
+	return 1;
 }
 
 void assignPoints(struct player_data *player) {
@@ -62,7 +64,7 @@ int findWinner (struct black *table) {
 
 	if (table->check_stand == 1) {
 	
-		if (table->player[CPU].total == table->player[PLY].total)			/* Tie */
+		if (table->player[CPU].total == table->player[PLY].total)		/* Tie */
 			winner = TIE;
 	
 		else if (table->player[CPU].total <= 21) {
@@ -73,7 +75,7 @@ int findWinner (struct black *table) {
 				winner = CPU_WINS;
 		}
 			
-		else   													/* Dealer wins  player->total > 21 */
+		else   															/* Dealer wins  player->total > 21 */
 			winner = CPU_WINS;
 	}
 	
@@ -127,21 +129,21 @@ int findWinner (struct black *table) {
 		
 		printCards(table);
 		printf("\nCredit: %d$\n", table->credit);
-		printf("Enter a key to start a new game\n");
+		printf("Enter a key to start a new game, x or q to quit\n");
+		getchar();
 		clearScreen();
 		
-		int ans;		
-		do {
-			ans = toupper(getchar());
+		int ans;
 			
-			if (ans == 'Q' || ans =='X')
+		do {
+			ans = getchar();
+			printf("ans = %d\n", ans);
+			if (ans == 'q' || ans =='x')
 				return 0;				
 					
 			else 
-				break;
-				
-			ans = toupper(getchar());
-				
+				break;				
+		
 		} while(1);
 
 		init_game(table);
@@ -190,14 +192,21 @@ void printCards(struct black *table) {
 		printf("%s ", table->player[PLY].card[i]);
 }
 
-void bet (struct black *table) {
+int bet (struct black *table) {
 
 	printf("What's your bet?\n");
+	int ans;
 	
 	while ( (scanf("%d", &table->bet) != 1) || (table->bet > table->credit) ) {
+	
 	    printf ("Enter a valid sum, your credit is %d$:\n", table->credit);
-	    getchar();
+	    ans= getchar();
+	    
+	    if(ans == 'x' || ans == 'q')
+	    	return 0;
 	}
+	
+	return 1;
 }
 
 void clearScreen(void)

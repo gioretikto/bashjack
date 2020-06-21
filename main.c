@@ -19,7 +19,8 @@ int main(void)
 		
 	printf("Ok, Get ready for casino action * Blackjack pays 3 to 2 * You're credit is 50$ * Press enter to start, q to quit\n\n");
 
-	init_game(&table);
+	if(!init_game(&table))
+		return 0;
 	
     for (;;) {
     
@@ -57,10 +58,9 @@ int main(void)
 				table.check_stand = 1;				
 		}
 
-		findWinner(&table);
+		if (!findWinner(&table))
+			return 0;
 	} /* end of for(;;) */
 
     return 0;
 }
-
-

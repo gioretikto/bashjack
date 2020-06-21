@@ -36,12 +36,12 @@ struct card {
    	
 };
 
-void bet (struct black *table);
+int bet (struct black *table);
 void shuffle (struct card *xdeck);
 void swap (struct card *a, struct card *b);
 void assignPoints(struct player_data *player);
 void getCard(struct black *table, enum players id);
 int findWinner (struct black *table);
 void printCards(struct black *table);
-void init_game(struct black *table);
+int init_game(struct black *table);
 void clearScreen(void);
