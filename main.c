@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include "black.h"
 
+extern struct card deck[CARDS];
+
 int main(void)
 {	
     srand ((unsigned) time(NULL));
@@ -12,12 +14,16 @@ int main(void)
 	
 	table.bet = 0;
 	table.credit = 50;
+	
+	table.cards_dealt = 0;
 	    
     int ans; /* For Hit/S answers */
     
     printf("\n\nStep right up to the Blackjack tables\n\n");
 		
 	printf("Ok, Get ready for casino action * Blackjack pays 3 to 2 * You're credit is 50$ * Press enter to start, q to quit\n\n");
+	
+	shuffle(deck);
 
 	if(!init_game(&table))
 		return 0;

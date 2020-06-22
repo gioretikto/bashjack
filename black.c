@@ -18,12 +18,8 @@ int init_game(struct black *table) {
 	
 	if(bet(table) == 0)
 		return 0;	
-			
-	if (table->cards_dealt == 0 || table->cards_dealt > CARDS-14)
-	{
-		shuffle(deck);
-		table->cards_dealt = 0;
-	}
+	
+	printf("cards dealt: %d\n",table->cards_dealt);
 	
 	/* Deal 1st hand: first two cards */
 	
@@ -154,6 +150,12 @@ int findWinner (struct black *table) {
 
 void getCard(struct black *table, enum players id)
 {
+	if (table->cards_dealt == CARDS)
+	{
+		shuffle(deck);
+		table->cards_dealt = 0;
+	}
+
 	if (table->player[CPU].hand == 0 && id == CPU)
 	{
 		table->player[CPU].card[table->player[id].hand] = deck[table->cards_dealt].symbol;
